@@ -9,3 +9,5 @@
 src/shuffle/fwk/ShuffleVersion.java
 /output/
 /junit/
+/.vscode
+/target
