@@ -203,6 +203,14 @@ public class ShuffleModel
    public ShuffleModelUser getUser() {
       return user;
    }
+
+   public boolean isProcessing() {
+      return resultsComputing;
+   }
+
+   public void startFakeProcessing() {
+      resultsComputing = true;
+   }
    
    protected void checkLocaleConfig() {
       ConfigManager preferencesManager = getPreferencesManager();

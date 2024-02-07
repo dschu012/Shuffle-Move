@@ -72,6 +72,12 @@ import shuffle.fwk.i18n.I18nUser;
 import shuffle.fwk.service.BaseServiceManager;
 import shuffle.fwk.service.movepreferences.MovePreferencesService;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+
 /**
  * @author Andrew Meyers
  *
@@ -186,8 +192,54 @@ public class ShuffleController extends Observable implements ShuffleViewUser, Sh
             ctrl.getFrame().launch();
          }
       });
+
+      Integer socketPort = ctrl.getFrame().getUser().getPreferencesManager().getIntegerValue("SOCKET_PORT");
+
+      if (socketPort == null) {
+         socketPort = 54321;
+      }
+      try (ServerSocket serverSocket = new ServerSocket(socketPort)) { // Use a suitable port
+         while (true) {
+               try (Socket clientSocket = serverSocket.accept();
+                  BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                  PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
+
+                  String message = in.readLine();
+
+                  // Interpret the message and trigger the desired function
+                  if ("loadNewBoard".equals(message)) {
+                     String result = loadNewBoard(ctrl);
+                     out.println(result);
+                  } else if ("ping".equals(message)) {
+                  out.println("ok");
+                  }
+               }
+         }
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
    }
+
+      private static String loadNewBoard(ShuffleController ctrl) {
+         ctrl.getModel().startFakeProcessing();
+         ctrl.getFrame().getUser().loadAll();
    
+         while (ctrl.getModel().isProcessing()) {
+            try {
+               LOG.info("still processing");
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+         if (ctrl.getModel().getCurrentResult() == null) {
+            return "Wrong Board";
+         } else {
+            String b = ctrl.getModel().getCurrentResult().toString();
+            return b;
+         }
+     }
+
    /**
     * Sets the user home to the given path.
     * 
