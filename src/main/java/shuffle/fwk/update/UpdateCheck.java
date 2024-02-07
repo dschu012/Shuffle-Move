@@ -21,12 +21,12 @@ package shuffle.fwk.update;
 import java.awt.Desktop;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedReader;
+// import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
+// import java.io.InputStreamReader;
+// import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -51,16 +51,16 @@ import shuffle.fwk.service.update.UpdateService;
 
 public class UpdateCheck implements I18nUser {
    private static final Logger LOG = Logger.getLogger(UpdateCheck.class.getName());
-   private static final String VERSION_SITE = "http://loresoftworks.noip.me/shuffleversion.html";
-   private static final String VERSION_REGEX = "(v\\d+\\.\\d+\\.\\d+).*href=\"(http\\S+)\">";
-   private static final Pattern VERSION_PATTERN = Pattern.compile(VERSION_REGEX);
+   // private static final String VERSION_SITE = "http://loresoftworks.noip.me/shuffleversion.html";
+   // private static final String VERSION_REGEX = "(v\\d+\\.\\d+\\.\\d+).*href=\"(http\\S+)\">";
+   // private static final Pattern VERSION_PATTERN = Pattern.compile(VERSION_REGEX);
    private static final String VERSION_EXTRACT = "v(\\d+)\\.(\\d+)\\.(\\d+)";
    private static final Pattern VERSION_EXTRACT_PATTERN = Pattern.compile(VERSION_EXTRACT);
    private static final String ZIP_NAME = "Shuffle Move %s.zip";
    
-   private static final String KEY_CORRUPT_PATH = "updatecheck.site.corruptpath";
-   private static final String KEY_SITE_IOEXCEPTION = "updatecheck.site.ioexception";
-   private static final String KEY_SITE_USEMANUAL = "updatecheck.site.pleaseusemanual";
+   // private static final String KEY_CORRUPT_PATH = "updatecheck.site.corruptpath";
+   // private static final String KEY_SITE_IOEXCEPTION = "updatecheck.site.ioexception";
+   // private static final String KEY_SITE_USEMANUAL = "updatecheck.site.pleaseusemanual";
    private static final String KEY_DOWNLOAD_READY = "updatecheck.ready";
    private static final String KEY_NOUPDATES = "updatecheck.noupdates";
    private static final String KEY_UPTODATE = "updatecheck.uptodate";
@@ -77,22 +77,23 @@ public class UpdateCheck implements I18nUser {
    
    public Map<String, String> getAvailableVersions() {
       Map<String, String> ret = new HashMap<String, String>();
-      try (InputStream is = new URL(VERSION_SITE).openStream()) {
-         BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-         String line;
-         while ((line = br.readLine()) != null) {
-            Matcher m = VERSION_PATTERN.matcher(line);
-            if (m.find()) {
-               ret.put(m.group(1), m.group(2));
-            }
-         }
-      } catch (MalformedURLException mue) {
-         LOG.log(Level.SEVERE, getString(KEY_CORRUPT_PATH), mue);
-      } catch (IOException ioe) {
-         LOG.log(Level.SEVERE, getString(KEY_SITE_IOEXCEPTION), ioe);
-         LOG.warning(getString(KEY_SITE_USEMANUAL));
-      }
       return ret;
+      // try (InputStream is = new URL(VERSION_SITE).openStream()) {
+      //    BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+      //    String line;
+      //    while ((line = br.readLine()) != null) {
+      //       Matcher m = VERSION_PATTERN.matcher(line);
+      //       if (m.find()) {
+      //          ret.put(m.group(1), m.group(2));
+      //       }
+      //    }
+      // } catch (MalformedURLException mue) {
+      //    LOG.log(Level.SEVERE, getString(KEY_CORRUPT_PATH), mue);
+      // } catch (IOException ioe) {
+      //    LOG.log(Level.SEVERE, getString(KEY_SITE_IOEXCEPTION), ioe);
+      //    LOG.warning(getString(KEY_SITE_USEMANUAL));
+      // }
+      // return ret;
    }
    
    public static void main(String[] args) {

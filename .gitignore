@@ -11,3 +11,4 @@ src/shuffle/fwk/ShuffleVersion.java
 /junit/
 /.vscode
 /target
+notes.md

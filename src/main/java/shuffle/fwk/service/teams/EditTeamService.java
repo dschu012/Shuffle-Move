@@ -67,7 +67,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.text.WordUtils;
 
 import shuffle.fwk.config.ConfigManager;
 import shuffle.fwk.config.EntryType;

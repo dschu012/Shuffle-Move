@@ -27,7 +27,7 @@ import java.util.function.Function;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.text.WordUtils;
 
 import shuffle.fwk.data.PkmType;
 import shuffle.fwk.i18n.I18nUser;
