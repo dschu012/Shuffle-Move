@@ -45,4 +45,6 @@ public interface EditRosterServiceUser extends ImageManagerProvider, RosterManag
    
    void deleteObserver(Observer o);
 
+   void saveRoster();
+
 }

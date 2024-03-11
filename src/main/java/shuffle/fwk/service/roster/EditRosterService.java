@@ -464,6 +464,7 @@ public class EditRosterService extends BaseService<EditRosterServiceUser> implem
    
    private void onApply() {
       getUser().loadFromRosterManager(myData);
+      getUser().saveRoster();
    }
    
    @Override

@@ -8,7 +8,7 @@
     <groupId>com.example</groupId>
     <artifactId>shuffle-move-maven</artifactId>
     <packaging>jar</packaging>
-    <version>1.0</version>
+    <version>1.01</version>
     <name>shuffle-move-maven</name>
     <url>http://maven.apache.org</url>
     <dependencies>

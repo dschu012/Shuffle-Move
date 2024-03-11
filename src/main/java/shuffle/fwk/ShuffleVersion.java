@@ -26,11 +26,11 @@ package shuffle.fwk;
 public interface ShuffleVersion {
    public static final long BUILD_DATE = 1706287861689l;
    /** The Major version number. 0 = unfinished, 1 = first release, etc. */
-   public static final int VERSION_MAJOR = 0;
+   public static final int VERSION_MAJOR = 1;
    /** The Minor version number. Each increment is a new significant overhaul. */
-   public static final int VERSION_MINOR = 3;
+   public static final int VERSION_MINOR = 0;
    /** The SubMinor version number. Each increment is a minor batch of tweaks and fixes. */
-   public static final int VERSION_SUBMINOR = 129;
+   public static final int VERSION_SUBMINOR = 1;
    /** The full version String which identifies the program's actual version. */
    public static final String VERSION_FULL = String.format("v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_SUBMINOR);
    /** Convenience array of version numbers for comparisons. */
