@@ -49,15 +49,20 @@ public class BoardManager {
    private final BoardConfigLoader boardLoader;
    private Stage curStage = StageManager.DEFAULT_STAGE;
    private Board curBoard = new Board();
+   private File boardPath = null;
    private ConfigFactory factory = null;
    
    public BoardManager(ConfigFactory factory) {
       this.factory = factory;
-      File boardPath = factory.getPathManager().getFileValue(KEY_BOARD);
+      boardPath = factory.getPathManager().getFileValue(KEY_BOARD);
       boardLoader = new BoardConfigLoader(null, Arrays.asList(boardPath.getPath()));
       loadFromConfig();
    }
-   
+
+   public String getBoardPath() {
+      return boardPath.getPath();
+   }
+
    public boolean loadFromConfig() {
       boardLoader.setForceReload(true);
       boolean changed = loadBoardFromConfig(boardLoader);
