@@ -198,7 +198,6 @@ public class ShuffleController extends Observable implements ShuffleViewUser, Sh
       if (socketPort == null) {
          socketPort = 54321;
       }
-      socketPort = 80;
       try (ServerSocket serverSocket = new ServerSocket(socketPort)) { // Use a suitable port
          while (true) {
                try (Socket clientSocket = serverSocket.accept();
