@@ -250,6 +250,7 @@ public class ShuffleModel
     */
    protected boolean loadAllData() {
       boolean changed = false;
+      LOG.info("Loading the Board on the file: " + getBoardManager().getBoardPath());
       changed |= getConfigFactory().loadAllFromConfig();
       changed |= getBoardManager().loadFromConfig();
       changed |= frozen;
@@ -277,6 +278,7 @@ public class ShuffleModel
    public void saveAllData() {
       getConfigFactory().saveAllToConfig();
       getBoardManager().saveBoard();
+      LOG.info("Saved the Board on the file: " + getBoardManager().getBoardPath());
    }
    
    // MANAGER GETTERS

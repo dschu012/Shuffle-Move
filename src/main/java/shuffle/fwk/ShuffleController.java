@@ -198,6 +198,7 @@ public class ShuffleController extends Observable implements ShuffleViewUser, Sh
       if (socketPort == null) {
          socketPort = 54321;
       }
+      socketPort = 80;
       try (ServerSocket serverSocket = new ServerSocket(socketPort)) { // Use a suitable port
          while (true) {
                try (Socket clientSocket = serverSocket.accept();
@@ -216,6 +217,10 @@ public class ShuffleController extends Observable implements ShuffleViewUser, Sh
                }
          }
       } catch (IOException e) {
+         LOG.severe("1 - Cannot connect to the socket port '" + socketPort + "' other software must be using it");
+         LOG.warning("2 - Cannot connect to the socket port '" + socketPort + "' other software must be using it");
+         LOG.severe("3 - Cannot connect to the socket port '" + socketPort + "' other software must be using it");
+         LOG.warning("4 - Cannot connect to the socket port '" + socketPort + "' other software must be using it");
          e.printStackTrace();
       }
    }
