@@ -200,6 +200,7 @@ public class ShuffleController extends Observable implements ShuffleViewUser, Sh
       }
       try (ServerSocket serverSocket = new ServerSocket(socketPort)) { // Use a suitable port
          while (true) {
+               LOG.info("Connected to the socket port '" + socketPort + "' successfully");
                try (Socket clientSocket = serverSocket.accept();
                   BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                   PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
