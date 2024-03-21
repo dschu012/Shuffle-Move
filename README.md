@@ -7,3 +7,6 @@ I'm not a java developer, so I used chatGPT help to convert it to a maven format
 And then added two extra functions:
 * Open a Websocket Port to execute the function the function "loadAll" from external source
 * Modified the Roster Menu to Always save
+
+To create a version:
+mvn clean package

@@ -6,10 +6,10 @@
     </properties>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.example</groupId>
-    <artifactId>shuffle-move-maven</artifactId>
+    <artifactId>shuffle-move</artifactId>
     <packaging>jar</packaging>
-    <version>1.01</version>
-    <name>shuffle-move-maven</name>
+    <version>1.02</version>
+    <name>shuffle-move</name>
     <url>http://maven.apache.org</url>
     <dependencies>
         <dependency>
