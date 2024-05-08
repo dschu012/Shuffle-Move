@@ -152,6 +152,8 @@ public class Board {
       return megaProgress;
    }
 
+   // Give right side column outcomes a score. The more desired,
+   // results "should" have a higher score.
    public int getRightSideGoldScore() {
       List<Species> lastColumn = IntStream.range(1, Board.NUM_ROWS + 1)
          .mapToObj(i -> getSpeciesAt(i, Board.NUM_COLS))
@@ -201,9 +203,9 @@ public class Board {
          if(biggestGap == 3) {
             groupScore += 10;
          } else if(biggestGap == 2) {
-            groupScore += remainingMoves <= 5 ? 50 : 100;
+            groupScore += remainingMoves <= 4 ? 50 : 100;
          } else if(biggestGap == 1) {
-            groupScore += remainingMoves <= 5 ? 100 : 50;
+            groupScore += remainingMoves <= 4 ? 100 : 50;
          }
       }
       if(coinCount == 2) {

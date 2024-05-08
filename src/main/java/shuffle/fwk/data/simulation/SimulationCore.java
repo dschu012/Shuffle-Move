@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,11 +34,6 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.w3c.dom.Node;
 
 import shuffle.fwk.GradingMode;
 import shuffle.fwk.config.manager.EffectManager;
@@ -99,7 +93,8 @@ public class SimulationCore extends RecursiveAction {
    private final EffectManager effectManager;
    private final GradingMode defaultGradingMode;
    private final boolean mobileMode;
-   
+   private final boolean shouldComputeNextMove;
+
    // Gets all the data it needs from the user, as deep copies of all relevant information.
    public SimulationCore(SimulationUser user, UUID processUUID) {
       this.processUUID = processUUID;
@@ -162,6 +157,7 @@ public class SimulationCore extends RecursiveAction {
       attackPowerUp = user.getAttackPowerUp();
       effectThreshold = user.getEffectThreshold();
       defaultGradingMode = user.getGradingModeManager().getDefaultGradingMode();
+      shouldComputeNextMove = "037MeowthEarlyGame".equals(user.getGradingModeManager().getCurrentGradingMode().getKey());
       mobileMode = user.isMobileMode();
    }
    
@@ -244,7 +240,7 @@ public class SimulationCore extends RecursiveAction {
       startTime = System.currentTimeMillis();
       try {
          Collection<SimulationResult> results;
-         if(isStage037()) {
+         if(shouldComputeNextMove) {
             // Look forward 1 extra move.
             results = computeN(board, 1);
             setMaxResultsN(results);
@@ -256,10 +252,6 @@ public class SimulationCore extends RecursiveAction {
       } catch (Exception e) {
          LOG.log(Level.FINE, "Can't simulate because: " + e.getMessage(), e);
       }
-   }
-
-   private boolean isStage037() {
-      return stage != null && "037".contains(stage.getName());
    }
 
    protected void setMaxResultsN(Collection<SimulationResult> results) {
