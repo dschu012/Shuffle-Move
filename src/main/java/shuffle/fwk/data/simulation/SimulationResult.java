@@ -18,9 +18,13 @@
 
 package shuffle.fwk.data.simulation;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import shuffle.fwk.data.Board;
 import shuffle.fwk.data.simulation.util.NumberSpan;
@@ -40,12 +44,17 @@ public class SimulationResult {
    private final NumberSpan numBlocksCleared;
    private final NumberSpan numDisruptionsCleared;
    private final NumberSpan numCombosCleared;
-   private final int hash;
+   private NumberSpan rightSideGoldScore;
+   private int hash;
+   private int moveNumber = 0;
    private final long startTime;
+   private SimulationResult parent = null;
+
+   private Collection<SimulationResult> children = new LinkedList<>();
    
    public SimulationResult(List<Integer> sourceMove, Board resultBoard, NumberSpan givenScore, NumberSpan givenGold,
          NumberSpan progress, UUID id, NumberSpan blocksCleared, NumberSpan disruptionsCleared,
-         NumberSpan combosCleared, long startTime) {
+         NumberSpan combosCleared, NumberSpan givenRightSideGoldScore, long startTime) {
       if (resultBoard == null) {
          throw new NullPointerException("Cannot create a SimulaitonResult with a null board.");
       }
@@ -54,6 +63,7 @@ public class SimulationResult {
       numCombosCleared = combosCleared.clone();
       score = givenScore.clone();
       gold = givenGold.clone();
+      rightSideGoldScore = givenRightSideGoldScore.clone();
       megaProgress = progress.clone();
       processUUID = id;
       move = sourceMove;
@@ -65,7 +75,7 @@ public class SimulationResult {
    /**
     * @return
     */
-   private int generateHash() {
+   public int generateHash() {
       final int prime = 31;
       int result = 1;
       result = prime * result + (board == null ? 0 : board.hashCode());
@@ -75,8 +85,13 @@ public class SimulationResult {
       result = prime * result + (numCombosCleared == null ? 0 : numCombosCleared.hashCode());
       result = prime * result + (score == null ? 0 : score.hashCode());
       result = prime * result + (gold == null ? 0 : gold.hashCode());
+      result = prime * result + (rightSideGoldScore == null ? 0 : rightSideGoldScore.hashCode());
       result = prime * result + (megaProgress == null ? 0 : megaProgress.hashCode());
+      result = prime * result + (parent == null ? 0 : parent.hashCode());
+      result = prime * result + (children == null ? 0 : children.hashCode());
+      result = prime * result + (int) (moveNumber ^ moveNumber >> 32);
       result = prime * result + (int) (startTime ^ startTime >> 32);
+      this.hash = result;
       return result;
    }
    
@@ -106,6 +121,65 @@ public class SimulationResult {
    
    public NumberSpan getNetGold() {
       return gold;
+   }
+
+   public NumberSpan getRightSideGoldScore() {
+      return rightSideGoldScore;
+   }
+
+   public void setRightSideGoldScore(NumberSpan rightSideGoldScore) {
+      this.rightSideGoldScore =  rightSideGoldScore;
+   }
+
+   public void addRightSideGoldScore(NumberSpan rightSideGoldScore) {
+      this.rightSideGoldScore = this.rightSideGoldScore.add(rightSideGoldScore);
+   }
+
+   public SimulationResult getMaxRightSideGoldScore() {
+      return flatten(this)
+         .max(Comparator.comparing(SimulationResult::getRightSideGoldScore))
+         .get();
+   }
+
+   public static Stream<SimulationResult> flatten(SimulationResult node) {
+      return node.getChildren().stream()
+               .flatMap(n -> {
+                  if(n.getChildren().isEmpty()) {
+                     return Stream.of(n);
+                  }
+                  return flatten(n);
+               });
+   }
+
+   public void setChildren(Collection<SimulationResult> children) {
+      this.children = children;
+   }
+
+   public Collection<SimulationResult> getChildren() {
+      return this.children;
+   }
+
+   public SimulationResult getParent() {
+      return parent;
+   }
+
+   public void setMoveNumber(int moveNumber) {
+      this.moveNumber = moveNumber;
+   }
+
+   public int getMoveNumber() {
+      return this.moveNumber;
+   }
+
+   public void setParent(SimulationResult parent) {
+      this.parent = parent;
+   }
+
+   public SimulationResult getRoot() {
+      if(this.parent == null) {
+         return this;
+      }
+      return this.parent.getRoot();
    }
    
    public NumberSpan getBlocksCleared() {
@@ -138,9 +212,10 @@ public class SimulationResult {
             column2 = move.get(3);
          }
       }
-      return String.format("%s,%s -> %s,%s: %sg, %s score, %s combos, %s blocks, %s disruptions, %s mega progress",
-            row1, column1, row2, column2, gold, score, numCombosCleared, numBlocksCleared, numDisruptionsCleared,
-            megaProgress);
+      String s = String.format("%s,%s -> %s,%s: %sg, %s score, %s combos, %s blocks, %s disruptions, %s mega progress, %s right side gold score",
+         row1, column1, row2, column2, gold, score, numCombosCleared, numBlocksCleared, numDisruptionsCleared,
+         megaProgress, rightSideGoldScore);
+      return parent != null ? parent.toString() + '\n' + s : s;
    }
    
    /*
@@ -171,6 +246,9 @@ public class SimulationResult {
                && numDisruptionsCleared.equals(other.numDisruptionsCleared);
          equal &= numCombosCleared == other.numCombosCleared || numCombosCleared != null
                && numCombosCleared.equals(other.numCombosCleared);
+         equal &= parent.equals(other.parent);
+         equal &= children.equals(other.children);
+         equal &= moveNumber == other.moveNumber;
          equal &= startTime == other.startTime;
       }
       return equal;

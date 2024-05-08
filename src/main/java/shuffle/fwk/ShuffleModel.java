@@ -253,6 +253,7 @@ public class ShuffleModel
       LOG.info("Loading the Board on the file: " + getBoardManager().getBoardPath());
       changed |= getConfigFactory().loadAllFromConfig();
       changed |= getBoardManager().loadFromConfig();
+      getBoardManager().getBoard().setRemainingMoves(getRemainingMoves());
       changed |= frozen;
       frozen = false;
       if (getRemainingMoves() <= 1) {
@@ -913,6 +914,7 @@ public class ShuffleModel
          public void run() {
             if (core.isCurrent()) {
                LOG.info(getString(KEY_SIMULATION_START));
+               LOG.info("Grading Mode: " + getCurrentGradingMode().getKey());
                forkJoinPool.execute(core);
             }
          }

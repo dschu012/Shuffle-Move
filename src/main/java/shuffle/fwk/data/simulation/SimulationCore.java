@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +35,11 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.w3c.dom.Node;
 
 import shuffle.fwk.GradingMode;
 import shuffle.fwk.config.manager.EffectManager;
@@ -70,6 +76,7 @@ public class SimulationCore extends RecursiveAction {
    // Increase this to improve result accuracy at the cost of processing time.
    private final int preferredCount;
    private final Board board;
+   private Board computeBoard;
    private final Set<Species> possibleBlocks;
    private final Species megaSlot;
    private final Map<Species, Integer> speciesLevels;
@@ -164,7 +171,7 @@ public class SimulationCore extends RecursiveAction {
    
    // Getters for use when creating primary SimulationStates
    protected Board getBoardCopy() {
-      return new Board(board);
+      return new Board(computeBoard);
    }
    
    public Species getMegaSlot() {
@@ -236,12 +243,76 @@ public class SimulationCore extends RecursiveAction {
    protected void compute() {
       startTime = System.currentTimeMillis();
       try {
-         Collection<SimulationResult> results = getResults();
+         Collection<SimulationResult> results;
+         if(isStage037()) {
+            // Look forward 1 extra move.
+            results = computeN(board, 1);
+            setMaxResultsN(results);
+         } else {
+            results = computeN(board, 0);
+         }
          submitResults(results);
          releaseResources();
       } catch (Exception e) {
          LOG.log(Level.FINE, "Can't simulate because: " + e.getMessage(), e);
       }
+   }
+
+   private boolean isStage037() {
+      return stage != null && "037".contains(stage.getName());
+   }
+
+   protected void setMaxResultsN(Collection<SimulationResult> results) {
+      results.forEach(result -> {
+         /*
+         if(result.getMove().get(0) == 1 && result.getMove().get(1) == 2
+            && result.getMove().get(2) == 6 && result.getMove().get(3) == 2) {
+               LOG.info(result.toString());
+         }
+         */
+         // Find the best child move and make that score increase the parents score.
+         // this will make it more likely for the simulator to take that path.
+         SimulationResult bestMove = result.getMaxRightSideGoldScore();
+         int i = 2;
+         while(bestMove != null) {
+            result.addRightSideGoldScore(bestMove.getRightSideGoldScore().multiplyBy(1.0/(i++)));
+            bestMove = bestMove.getParent();
+         }
+      });
+   }
+
+   protected Collection<SimulationResult> computeN(Board b, int n) {
+      if(n == 0) {
+         return getResults(b);
+      }
+      Collection<SimulationResult> results = getResults(b);
+      for(SimulationResult result : results) {
+         /*
+         if(result.getMove().get(0) == 1 && result.getMove().get(1) == 2
+            && result.getMove().get(2) == 6 && result.getMove().get(3) == 2) {
+               LOG.info(result.toString());
+         }
+         */
+         Board resultBoard = result.getBoard();
+         resultBoard.decrementRemainingMoves();
+         result.setChildren(computeN(resultBoard, n - 1));
+         result.getChildren().forEach(child -> {
+            child.setParent(result);
+            child.setMoveNumber(n);
+            child.generateHash();
+            /*
+            if(result.getMove().get(0) == 1 && result.getMove().get(1) == 2
+               && result.getMove().get(2) == 6 && result.getMove().get(3) == 2) {
+               if(child.getMove().get(0) == 6 && child.getMove().get(1) == 1
+                  && child.getMove().get(2) == 5 && child.getMove().get(3) == 6) {
+                     LOG.info(child.toString());
+               }
+            }
+            */
+         });
+         result.generateHash();
+      }
+      return results;
    }
    
    /**
@@ -256,15 +327,20 @@ public class SimulationCore extends RecursiveAction {
    /**
     * 
     */
-   private Collection<SimulationResult> getResults() {
-      Collection<SimulationResult> results = computeWithoutMove();
+    private Collection<SimulationResult> getResults() {
+      return getResults(board);
+    }
+   
+    private Collection<SimulationResult> getResults(Board b) {
+      computeBoard = b;
+      Collection<SimulationResult> results = computeWithoutMove(b);
       if (results != null) {
          return results;
       }
       long start = System.currentTimeMillis();
       LOG.fine("Preparing board, moves & feeder");
       // First, generate the valid moves and the feeders required.
-      List<List<Integer>> validMoves = getPossibleMoves(board);
+      List<List<Integer>> validMoves = getPossibleMoves(b);
       Collection<SimulationFeeder> feeders = SimulationFeeder.getFeedersFor(minHeight, getStage(), possibleBlocks,
             preferredCount);
             
@@ -301,14 +377,19 @@ public class SimulationCore extends RecursiveAction {
    /**
     * @return
     */
-   public Collection<SimulationResult> computeWithoutMove() {
+    public Collection<SimulationResult> computeWithoutMove() {
+      return computeWithoutMove(board);
+    }
+
+   public Collection<SimulationResult> computeWithoutMove(Board b) {
+      computeBoard = b;
       Collection<SimulationFeeder> feeders = SimulationFeeder.getFeedersFor(0, getStage(), possibleBlocks,
             preferredCount);
       Collection<SimulationTask> toRun = new SimulationCreationTask(this, null, feeders).invoke();
       ForkJoinTask<SimulationResult> assembler = new SimulationResultsAssembler(null, processUUID, toRun, startTime)
             .fork();
       SimulationResult settleResult = assembler.join();
-      if (settleResult.getBoard().equals(board)) {
+      if (settleResult.getBoard().equals(b)) {
          return null;
       } else {
          return Arrays.asList(settleResult);
@@ -401,7 +482,7 @@ public class SimulationCore extends RecursiveAction {
       // First, check that the pickup and dropat are not frozen, that the pick
       // is pickable, that the drop is droppable, and that the dropat
       // coordinates immediately result in a combo of some kind.
-      
+
       Species pickedUpSpecies = b.getSpeciesAt(pickup.get(0), pickup.get(1));
       Species droppedOnSpecies = b.getSpeciesAt(dropon.get(0), dropon.get(1));
       

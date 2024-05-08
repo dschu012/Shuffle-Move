@@ -21,8 +21,11 @@ package shuffle.fwk.data;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author Andrew Meyers
@@ -39,6 +42,7 @@ public class Board {
    private final boolean[][] clouded = new boolean[NUM_ROWS][NUM_COLS];
    private int megaProgress;
    private Status status;
+   private int remainingMoves;
    /**
     * The number of turns required for the non-none status to revert to none.
     */
@@ -104,6 +108,7 @@ public class Board {
       megaProgress = b.getMegaProgress();
       status = b.getStatus();
       statusDuration = b.getStatusDuration();
+      remainingMoves = b.getRemainingMoves();
    }
    
    public int getStatusDuration() {
@@ -130,9 +135,84 @@ public class Board {
          return false;
       }
    }
+
+   public int getRemainingMoves() {
+      return remainingMoves;
+   }
+
+   public void setRemainingMoves(int remainingMoves) {
+      this.remainingMoves = remainingMoves;
+   }
+
+   public void decrementRemainingMoves() {
+      this.remainingMoves--;
+   }
    
    public int getMegaProgress() {
       return megaProgress;
+   }
+
+   public int getRightSideGoldScore() {
+      List<Species> lastColumn = IntStream.range(1, Board.NUM_ROWS + 1)
+         .mapToObj(i -> getSpeciesAt(i, Board.NUM_COLS))
+         .collect(Collectors.toList());
+
+      int coinCount = (int)lastColumn.stream()
+         .filter(s -> s == Species.COIN)
+         .count();
+      
+      int woodCount = (int)lastColumn.stream()
+         .filter(s -> s == Species.WOOD)
+         .count();
+
+      int groupCount = 0;
+      int biggestGap = 0;
+      int lastCoin = 0;
+
+      for(int i = 1; i < lastColumn.size(); i++) {
+         Species currentSpecies = lastColumn.get(i);
+         if(currentSpecies == Species.COIN) {
+               if(currentSpecies == lastColumn.get(i - 1)) {
+                  groupCount++;
+               }
+               if(lastCoin > 0) {
+                  int gap = i - lastCoin - 1;
+                  if(gap > biggestGap) {
+                     biggestGap = gap;
+                  }
+               }
+               lastCoin = i;
+         } 
+      }
+
+      int groupScore = 0;
+      if(coinCount >= 4) {
+         groupScore += (groupCount == 2) ? 1000 : -1000;
+         groupScore += biggestGap == 1 ? 1000 : -100;
+         if(biggestGap == 2) {
+            groupScore += remainingMoves <= 3 ? 100 : 100;
+         }
+         if(biggestGap == 1) {
+            groupScore += remainingMoves <= 3 ? 1000 : 100;
+         }
+      }
+      if(coinCount == 3) {
+         groupScore += (groupCount == 1) ? 100 : -100;
+         if(biggestGap == 3) {
+            groupScore += 10;
+         } else if(biggestGap == 2) {
+            groupScore += remainingMoves <= 5 ? 50 : 100;
+         } else if(biggestGap == 1) {
+            groupScore += remainingMoves <= 5 ? 100 : 50;
+         }
+      }
+      if(coinCount == 2) {
+         groupScore += (groupCount == 1) ? 100 : -50;
+      }
+
+      return coinCount * 10
+         + woodCount * -10
+         + groupScore;
    }
    
    public boolean increaseMegaProgress(int increaseBy) {

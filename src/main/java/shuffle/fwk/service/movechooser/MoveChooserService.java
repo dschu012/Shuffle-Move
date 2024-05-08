@@ -331,6 +331,7 @@ public class MoveChooserService extends BaseService<ShuffleMenuUser>implements I
       ret.add(getString(KEY_HEADER_BLOCKS));
       ret.add(getString(KEY_HEADER_DISRUPTIONS));
       ret.add(getString(KEY_HEADER_MEGASTATE));
+      ret.add(getString("Right Side Gold Score"));
       return ret;
    }
    
@@ -532,9 +533,10 @@ public class MoveChooserService extends BaseService<ShuffleMenuUser>implements I
       NumberSpan blocks = result.getBlocksCleared();
       NumberSpan disrupts = result.getDisruptionsCleared();
       NumberSpan mega = result.getProgress();
-      
+      NumberSpan rightSideGoldScore = result.getRightSideGoldScore();
+
       return new Vector<String>(Arrays.asList(Integer.toString(rank), firstPart.toString(), gold.toString(),
-            score.toString(), combos.toString(), blocks.toString(), disrupts.toString(), mega.toString()));
+            score.toString(), combos.toString(), blocks.toString(), disrupts.toString(), mega.toString(), rightSideGoldScore.toString()));
    }
    
    private void pushSelectionToUser2() {

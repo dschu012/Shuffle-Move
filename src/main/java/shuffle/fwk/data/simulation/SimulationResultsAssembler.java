@@ -65,6 +65,7 @@ public class SimulationResultsAssembler extends RecursiveTask<SimulationResult> 
       NumberSpan disrupts = new NumberSpan();
       NumberSpan combos = new NumberSpan();
       NumberSpan progress = new NumberSpan();
+      NumberSpan rightSideGoldScore = new NumberSpan();
       
       // keeps track of all board chances, and the best one.
       Map<Board, Float> boardChances = new HashMap<Board, Float>();
@@ -84,7 +85,8 @@ public class SimulationResultsAssembler extends RecursiveTask<SimulationResult> 
          disrupts = disrupts.put(state.getDisruptionsCleared(), weight);
          combos = combos.put(state.getCombosCleared(), weight);
          progress = progress.put(state.getMegaProgress(), weight);
-         
+         rightSideGoldScore = rightSideGoldScore.put(state.getRightSideGoldScore(), weight);
+
          // Process the board chances
          Board b = state.getResultBoard();
          float boardChance = weight;
@@ -98,7 +100,7 @@ public class SimulationResultsAssembler extends RecursiveTask<SimulationResult> 
       }
       SimulationResult result = null;
       if (likelyBoard != null) {
-         result = new SimulationResult(move, likelyBoard, score, gold, progress, processUUID, blocks, disrupts, combos,
+         result = new SimulationResult(move, likelyBoard, score, gold, progress, processUUID, blocks, disrupts, combos, rightSideGoldScore,
                startTime);
       }
       return result;

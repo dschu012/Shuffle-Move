@@ -192,6 +192,10 @@ public class SimulationState {
    public int getMegaProgress() {
       return board.getMegaProgress();
    }
+
+   public int getRightSideGoldScore() {
+      return board.getRightSideGoldScore();
+   }
    
    public SimulationFeeder getFeeder() {
       return simFeeder;
